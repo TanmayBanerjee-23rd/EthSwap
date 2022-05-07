@@ -93,7 +93,7 @@ class App extends Component {
     this.setState( { loading: true } );
 
     console.log( this.state.ethSwapContract );
-    this.state.ethSwapContract.buyTokens().send( { value: equivalentEtherAmt, from: this.state.userAccount } ).on( "transactionHash", ( hash ) => {
+    this.state.ethSwapContract.methods.buyTokens().send( { value: equivalentEtherAmt, from: this.state.userAccount } ).on( "transactionHash", ( hash ) => {
         console.log( "transaction Hash :: ", hash );
 
         this.setState( { loading: false } );
