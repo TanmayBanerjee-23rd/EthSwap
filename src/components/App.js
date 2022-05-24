@@ -77,7 +77,7 @@ class App extends Component {
 
     if ( ethSwapNetworkObj && Object.keys( ethSwapNetworkObj ).length ) {
       
-      const ethSwapContract = new web3.eth.Contract( tokenAbi, ethSwapNetworkObj.address );
+      const ethSwapContract = new web3.eth.Contract( EthSwap.abi, ethSwapNetworkObj.address );
       
       this.setState( { ethSwapContract } );
       // console.log( "ethSwap contract", this.state.ethSwapContract );
@@ -98,8 +98,43 @@ class App extends Component {
 
         this.setState( { loading: false } );
 
+        setTimeout(() => {
+          this.setState( { loading: false} );
+          this.updateBalances();
+        }, 2000 );
+
       });
   };
+
+  sellDevTokens = ( tokensInWei ) => {
+    this.state.tokenContract.methods.approve( this.state.ethSwapContract.address, tokensInWei )
+                                      .send( { from: this.state.userAccount } )
+                                      .on( "transactionHash", ( hash ) => {
+                                        this.state.ethSwapContract.methods.sellTokens( tokensInWei )
+                                                                          .send( { from: this.state.userAccount } )
+                                                                          .on( "transactionHash", ( hash ) => {
+
+                                                                            setTimeout( () => {
+                                                                              this.setState( { loading: false} );
+                                                                              this.updateBalances();
+                                                                            }, 2000 );
+                                                                          });
+                                      });
+  }
+
+  updateBalances = async () => {
+    
+    // update token balance
+    const tokenBalance = await this.state.tokenContract.methods.balanceOf( this.state.userAccount ).call();
+
+    // fetch user account balance connected with MetaMask and store in components state
+    const userAccountBalance = await window.web3.eth.getBalance( this.state.userAccount );
+    
+    this.setState( { 
+      tokenBalance: tokenBalance.toString(),
+      userAccountBalance } );
+
+  }
 
   async componentDidMount() {
     await this.loadWeb3();
@@ -115,7 +150,7 @@ class App extends Component {
     if ( this.state.loading ) {
       content = <p id='loader' className='text-center'>Loading ...</p>
     }else {
-      content = <Main balances={ { userAccountBalance, tokenBalance } } methods={{ buyDevTokens: this.buyDevTokens } } />;
+      content = <Main balances={ { userAccountBalance, tokenBalance } } methods={{ buyDevTokens: this.buyDevTokens, sellDevTokens: this.sellDevTokens } } />;
     }
 
 

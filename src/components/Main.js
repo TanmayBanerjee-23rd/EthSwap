@@ -1,12 +1,12 @@
 import React, { Component } from "react";
-import tokenLogo from "../token-logo.png";
-import ethLogo from "../eth-logo.png";
-
+import BuyForm from "./BuyForm";
+import SellForm from "./SellForm";
 class Main extends Component {
 
     constructor( props ) {
         super( props );
         this.state = {
+            currentForm: 'buy',
             output: 0,
             inputEhtersInWei: 0
         }
@@ -20,78 +20,53 @@ class Main extends Component {
     };
 
     render() {
-        return (
-            <div id="content">
+      let content
+      if( this.state.currentForm === 'buy' ) {
+        content = <BuyForm
+          userAccountBalance={this.props.balances.userAccountBalance}
+          tokenBalance={this.props.balances.tokenBalance}
+          buyDevTokens={this.props.methods.buyDevTokens}
+        />
+      } else {
+        content = <SellForm
+          userAccountBalance={this.props.balances.userAccountBalance}
+          tokenBalance={this.props.balances.tokenBalance}
+          sellDevTokens={this.props.methods.sellDevTokens}
+        />
+      }
+      return (
+          <div id="content">
 
-            <div className="card mb-4" >
-    
-              <div className="card-body">
-    
-              <form className="mb-3" onSubmit={this.handleOnSubmit}>
-                <div>
-                  <label className="float-left"><b>Input</b></label>
-                  <span className="float-right text-muted">
-                    Balance: 
-                    {window.web3.utils.fromWei(this.props.balances.userAccountBalance, 'Ether')}
-                  </span>
-                </div>
-                <div className="input-group mb-4">
-                  <input
-                    type="text"
-                    onChange={(event) => {
-                      const etherAmount = event.target.value.toString()
-                      this.setState({
-                        output: etherAmount * 100,
-                        inputEhtersInWei: window.web3.utils.toWei( event.target.value, 'Ether' )
-                      }, 
-                    //   () => console.log( this.state.output )
-                       )
-                    }}
-                    className="form-control form-control-lg"
-                    placeholder="0"
-                    required />
-                  <div className="input-group-append">
-                    <div className="input-group-text">
-                      <img src={ethLogo} height='32' alt=""/>
-                          &nbsp;&nbsp;ETH
-                    </div>
-                  </div>
-                </div>
-                <div>
-                  <label className="float-left"><b>Output</b></label>
-                  <span className="float-right text-muted">
-                    Balance: 
-                    {window.web3.utils.fromWei(this.props.balances.tokenBalance, 'Ether')}
-                  </span>
-                </div>
-                <div className="input-group mb-2">
-                  <input
-                    type="text"
-                    className="form-control form-control-lg"
-                    placeholder="0"
-                    value={ this.state.output }
-                    disabled
-                  />
-                  <div className="input-group-append">
-                    <div className="input-group-text">
-                      <img src={tokenLogo} height='32' alt=""/>
-                      &nbsp;&nbsp;DApp
-                    </div>
-                  </div>
-                </div>
-                <div className="mb-5">
-                  <span className="float-left text-muted">Exchange Rate</span>
-                  <span className="float-right text-muted">1 ETH = 100 DApp</span>
-                </div>
-                <button type="submit" className="btn btn-primary btn-block btn-lg">SWAP!</button>
-              </form>
-    
-              </div>
-    
+            <div className="d-flex justify-content-between mb-3">
+              <button
+                  className="btn btn-light"
+                  onClick={( ) => {
+                    this.setState( { currentForm: 'buy' } )
+                  }}
+                >
+                Buy
+              </button>
+              <span className="text-muted">&lt; &nbsp; &gt;</span>
+              <button
+                  className="btn btn-light"
+                  onClick={( ) => {
+                    this.setState( { currentForm: 'sell' } )
+                  }}
+                >
+                Sell
+              </button>
             </div>
-    
+
+          <div className="card mb-4" >
+  
+            <div className="card-body">
+              { content }
+            </div>
+  
           </div>
-        )
+  
+        </div>
+      )
     }
 };
 
