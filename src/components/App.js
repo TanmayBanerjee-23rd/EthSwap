@@ -6,6 +6,8 @@ import './App.css';
 import Web3 from "web3";
 import Token from "../abis/Token.json";
 import EthSwap from "../abis/EthSwap.json";
+import WalletConnectProvider from "@walletconnect/web3-provider";
+
 
 class App extends Component {
 
@@ -34,6 +36,26 @@ class App extends Component {
       window.web3 = new Web3( window.web3.currentProvider );
     }
 
+    if ( !window.web3 ) {
+      //  Create WalletConnect Provider
+      const provider = new WalletConnectProvider({
+        infuraId: "27e484dcd9e3efcfd25a83a78777cdf1",
+      });
+
+      //  Enable session (triggers QR Code modal)
+      await provider.enable();
+
+      
+      window.web3 = new Web3(provider);
+
+      // Subscribe to accounts change
+      provider.on("accountsChanged", async (accounts) => {
+        // fetch user account connected with MetaMask and store in components state
+        const userAccounts = await window.web3.eth.getAccounts();
+        this.setState( { userAccount: userAccounts[ 0 ] } );
+      });
+    }
+    
     if ( !window.web3 ) {
       alert( window.navigator.userAgent + " is not connected to any blockchain network.");
     }
